@@ -113,35 +113,6 @@ void kmem_cache_free(struct kmem_cache *cache, void *p)
 	kfree(p);
 }
 
-struct page *
-__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
-		       struct zonelist *zonelist, nodemask_t *nodemask)
-{
-	void *p;
-	struct page *page;
-	unsigned long pointer;
-
-	/* typically, called from networking code by alloc_page or */
-	/* directly with an order = 0. */
-	if (order)
-		return NULL;
-	p = lib_malloc(sizeof(struct page) + (1 << PAGE_SHIFT));
-	page = (struct page *)p;
-
-	atomic_set(&page->_count, 1);
-	page->flags = 0;
-	pointer = (unsigned long)page;
-	pointer += sizeof(struct page);
-	page->virtual = (void *)pointer;
-	return page;
-}
-void __free_pages(struct page *page, unsigned int order)
-{
-	/* typically, called from networking code by __free_page */
-	lib_assert(order == 0);
-	lib_free(page);
-}
-
 void put_page(struct page *page)
 {
 	if (atomic_dec_and_test(&page->_count))
