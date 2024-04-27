@@ -126,8 +126,6 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	if (order)
 		return NULL;
 	p = lib_malloc(sizeof(struct page) + (1 << PAGE_SHIFT));
-	if (p != 0)
-		lib_memset(p, 0, sizeof(struct page) + (1 << PAGE_SHIFT));
 	page = (struct page *)p;
 
 	atomic_set(&page->_count, 1);
@@ -148,28 +146,6 @@ void put_page(struct page *page)
 {
 	if (atomic_dec_and_test(&page->_count))
 		lib_free(page);
-}
-unsigned long get_zeroed_page(gfp_t gfp_mask)
-{
-	return __get_free_pages(gfp_mask | __GFP_ZERO, 0);
-}
-
-void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
-{
-	return alloc_pages(gfp_mask, get_order(size));
-}
-
-unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
-{
-	int size = (1 << order) * PAGE_SIZE;
-	void *p = kmalloc(size, gfp_mask);
-
-	return (unsigned long)p;
-}
-void free_pages(unsigned long addr, unsigned int order)
-{
-	if (addr != 0)
-		kfree((void *)addr);
 }
 
 void *vmalloc(unsigned long size)
@@ -202,10 +178,4 @@ void *__alloc_percpu(size_t size, size_t align)
 void free_percpu(void __percpu *ptr)
 {
 	kfree(ptr);
-}
-void *__alloc_bootmem_nopanic(unsigned long size,
-			      unsigned long align,
-			      unsigned long goal)
-{
-	return kzalloc(size, GFP_KERNEL);
 }
